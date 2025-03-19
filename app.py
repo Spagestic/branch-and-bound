@@ -25,12 +25,12 @@ def simplex_solver_with_steps(c, A, b, bounds):
     - x: Optimal solution
     - optimal_value: Optimal objective value
     """
-    print("\n--- Starting Simplex Method ---")
-    print(f"Objective: Maximize {' + '.join([f'{c[i]}x_{i}' for i in range(len(c))])}")
-    print(f"Constraints:")
+    st.markdown("\n--- Starting Simplex Method ---")
+    st.text(f"Objective: Maximize {' + '.join([f'{c[i]}x_{i}' for i in range(len(c))])}")
+    st.text(f"Constraints:")
     for i in range(len(b)):
         constraint_str = ' + '.join([f"{A[i,j]}x_{j}" for j in range(A.shape[1])])
-        print(f"  {constraint_str} <= {b[i]}")
+        st.text(f"  {constraint_str} <= {b[i]}")
     
     # Convert problem to standard form (for tableau method)
     # First handle bounds by adding necessary constraints
@@ -83,12 +83,12 @@ def simplex_solver_with_steps(c, A, b, bounds):
         for i, row in enumerate(tableau):
             rows.append([row_labels[i]] + [f"{val:.3f}" for val in row])
         
-        print("\nCurrent Tableau:")
-        print(tabulate(rows, headers=headers, tablefmt="grid"))
-        print(f"Basic variables: {[f'x_{v}' if v < n_vars else f's_{v-n_vars}' for v in base_vars]}")
+        st.text("\nCurrent Tableau:")
+        st.text(tabulate(rows, headers=headers, tablefmt="grid"))
+        st.text(f"Basic variables: {[f'x_{v}' if v < n_vars else f's_{v-n_vars}' for v in base_vars]}")
     
     # Print initial tableau
-    print("\nInitial tableau:")
+    st.text("\nInitial tableau:")
     print_tableau(tableau, base_vars)
     
     # Main simplex loop
@@ -97,15 +97,15 @@ def simplex_solver_with_steps(c, A, b, bounds):
     
     while iteration < max_iterations:
         iteration += 1
-        print(f"\n--- Iteration {iteration} ---")
+        st.text(f"\n--- Iteration {iteration} ---")
         
         # Find the entering variable (most negative coefficient in objective row for maximization)
         entering_col = np.argmin(tableau[0, :-1])
         if tableau[0, entering_col] >= -1e-10:  # Small negative numbers due to floating-point errors
-            print("Optimal solution reached - no negative coefficients in objective row")
+            st.text("Optimal solution reached - no negative coefficients in objective row")
             break
         
-        print(f"Entering variable: {'x_' + str(entering_col) if entering_col < n_vars else 's_' + str(entering_col - n_vars)}")
+        st.text(f"Entering variable: {'x_' + str(entering_col) if entering_col < n_vars else 's_' + str(entering_col - n_vars)}")
         
         # Find the leaving variable using min ratio test
         ratios = []
@@ -116,15 +116,15 @@ def simplex_solver_with_steps(c, A, b, bounds):
                 ratios.append(tableau[i, -1] / tableau[i, entering_col])
         
         if all(r == np.inf for r in ratios):
-            print("Unbounded solution - no leaving variable found")
+            st.text("Unbounded solution - no leaving variable found")
             return None, float('inf')  # Problem is unbounded
         
         # Find the row with minimum ratio
         leaving_row = np.argmin(ratios) + 1  # +1 because we skip the objective row
         leaving_var = base_vars[leaving_row - 1]
         
-        print(f"Leaving variable: {'x_' + str(leaving_var) if leaving_var < n_vars else 's_' + str(leaving_var - n_vars)}")
-        print(f"Pivot element: {tableau[leaving_row, entering_col]:.3f} at row {leaving_row}, column {entering_col}")
+        st.text(f"Leaving variable: {'x_' + str(leaving_var) if leaving_var < n_vars else 's_' + str(leaving_var - n_vars)}")
+        st.text(f"Pivot element: {tableau[leaving_row, entering_col]:.3f} at row {leaving_row}, column {entering_col}")
         
         # Perform pivot operation
         # First, normalize the pivot row
@@ -141,11 +141,11 @@ def simplex_solver_with_steps(c, A, b, bounds):
         base_vars[leaving_row - 1] = entering_col
         
         # Print updated tableau
-        print("\nAfter pivot:")
+        st.text("\nAfter pivot:")
         print_tableau(tableau, base_vars)
     
     if iteration == max_iterations:
-        print("Max iterations reached without convergence")
+        st.text("Max iterations reached without convergence")
         return None, None
     
     # Extract solution
@@ -162,9 +162,9 @@ def simplex_solver_with_steps(c, A, b, bounds):
     # Calculate objective value
     optimal_value = np.dot(c, x)
     
-    print("\n--- Simplex Method Complete ---")
-    print(f"Optimal solution found: {x}")
-    print(f"Optimal objective value: {optimal_value}")
+    st.markdown("\n--- Simplex Method Complete ---")
+    st.text(f"Optimal solution found: {x}")
+    st.text(f"Optimal objective value: {optimal_value}")
     
     return x, optimal_value
 
@@ -318,26 +318,26 @@ class BranchAndBoundSolver:
         node_queue = PriorityQueue()
         
         # Solve the root relaxation
-        print("Step 1: Solving root relaxation (continuous problem)")
+        st.text("Step 1: Solving root relaxation (continuous problem)")
         x_root, obj_root = self.solve_relaxation(lower_bounds, upper_bounds)
         
         if x_root is None:
-            print("Root problem infeasible")
+            st.text("Root problem infeasible")
             return None, float('-inf') if self.maximize else float('inf')
         
         # Add root node to the graph
         root_node = "S0"
         self.add_node_to_graph(root_node, obj_root, x_root)
         
-        print(f"Root relaxation objective: {obj_root:.6f}")
-        print(f"Root solution: {x_root}")
+        st.text(f"Root relaxation objective: {obj_root:.6f}")
+        st.text(f"Root solution: {x_root}")
         
         # Initial upper bound is the root objective
         upper_bound = obj_root
         
         # Check if the root solution is already integer-feasible
         if self.is_integer_feasible(x_root):
-            print("Root solution is integer-feasible! No need for branching.")
+            st.text("Root solution is integer-feasible! No need for branching.")
             self.best_solution = x_root
             self.best_objective = obj_root
             
@@ -368,7 +368,7 @@ class BranchAndBoundSolver:
             lb_str, x_star_str, f"{upper_bound:.2f}", lb_str, active_nodes_str
         ])
         
-        print("\nStarting branch and bound process:")
+        st.text("\nStarting branch and bound process:")
         node_counter = 1
         
         while not node_queue.empty():
@@ -376,7 +376,7 @@ class BranchAndBoundSolver:
             priority, _, node_name, node_lower_bounds, node_upper_bounds = node_queue.get()
             self.nodes_explored += 1
             
-            print(f"\nStep {self.nodes_explored + 1}: Exploring node {node_name}")
+            st.text(f"\nStep {self.nodes_explored + 1}: Exploring node {node_name}")
             
             # Remove from active nodes
             self.active_nodes.remove(node_name)
@@ -387,8 +387,8 @@ class BranchAndBoundSolver:
             floor_val = math.floor(branch_val)
             ceil_val = math.ceil(branch_val)
             
-            print(f"  Branching on variable x_{branch_var} with value {branch_val:.6f}")
-            print(f"  Creating two branches: x_{branch_var} ≤ {floor_val} and x_{branch_var} ≥ {ceil_val}")
+            st.text(f"  Branching on variable x_{branch_var} with value {branch_val:.6f}")
+            st.text(f"  Creating two branches: x_{branch_var} ≤ {floor_val} and x_{branch_var} ≥ {ceil_val}")
             
             # Process left branch (floor)
             left_node = f"S{node_counter}"
@@ -408,17 +408,17 @@ class BranchAndBoundSolver:
             
             # Process the floor branch
             if x_floor is None:
-                print(f"  {left_node} is infeasible")
+                st.text(f"  {left_node} is infeasible")
             else:
-                print(f"  {left_node} relaxation objective: {obj_floor:.6f}")
-                print(f"  {left_node} solution: {x_floor}")
+                st.text(f"  {left_node} relaxation objective: {obj_floor:.6f}")
+                st.text(f"  {left_node} solution: {x_floor}")
                 
                 # Check if integer feasible and update best solution if needed
                 if self.is_integer_feasible(x_floor) and ((self.maximize and obj_floor > self.best_objective) or 
                                                         (not self.maximize and obj_floor < self.best_objective)):
                     self.best_solution = x_floor.copy()
                     self.best_objective = obj_floor
-                    print(f"  Found new best integer solution with objective {self.best_objective:.6f}")
+                    st.text(f"  Found new best integer solution with objective {self.best_objective:.6f}")
                 
                 # Add to queue if not fathomed
                 if ((self.maximize and obj_floor > self.best_objective) or 
@@ -447,17 +447,17 @@ class BranchAndBoundSolver:
             
             # Process the ceil branch
             if x_ceil is None:
-                print(f"  {right_node} is infeasible")
+                st.text(f"  {right_node} is infeasible")
             else:
-                print(f"  {right_node} relaxation objective: {obj_ceil:.6f}")
-                print(f"  {right_node} solution: {x_ceil}")
+                st.text(f"  {right_node} relaxation objective: {obj_ceil:.6f}")
+                st.text(f"  {right_node} solution: {x_ceil}")
                 
                 # Check if integer feasible and update best solution if needed
                 if self.is_integer_feasible(x_ceil) and ((self.maximize and obj_ceil > self.best_objective) or 
                                                        (not self.maximize and obj_ceil < self.best_objective)):
                     self.best_solution = x_ceil.copy()
                     self.best_objective = obj_ceil
-                    print(f"  Found new best integer solution with objective {self.best_objective:.6f}")
+                    st.text(f"  Found new best integer solution with objective {self.best_objective:.6f}")
                 
                 # Add to queue if not fathomed
                 if ((self.maximize and obj_ceil > self.best_objective) or 
@@ -488,14 +488,14 @@ class BranchAndBoundSolver:
                 lb_str, x_star_str, f"{upper_bound:.2f}", lb_str, active_nodes_str
             ])
         
-        print("\nBranch and bound completed!")
-        print(f"Nodes explored: {self.nodes_explored}")
+        st.text("\nBranch and bound completed!")
+        st.text(f"Nodes explored: {self.nodes_explored}")
         
         if self.best_solution is not None:
-            print(f"Optimal objective: {self.best_objective:.6f}")
-            print(f"Optimal solution: {self.best_solution}")
+            st.text(f"Optimal objective: {self.best_objective:.6f}")
+            st.text(f"Optimal solution: {self.best_solution}")
         else:
-            print("No feasible integer solution found")
+            st.text("No feasible integer solution found")
         
         # Display steps table
         self.display_steps_table()
