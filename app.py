@@ -140,7 +140,8 @@ if st.sidebar.button("Solve"):
 
         # Visualize Branch and Bound Tree
         st.subheader("Branch and Bound Tree")
-        solver.visualize_graph()
+        fig = solver.visualize_graph()
+        st.pyplot(fig)
 
         # Validation with CVXPY's Integer Solver
         st.subheader("Validation with CVXPY's Integer Solver")

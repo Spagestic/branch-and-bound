@@ -122,7 +122,7 @@ class BranchAndBoundSolver:
     
     def visualize_graph(self):
         """Visualize the branch and bound graph"""
-        plt.figure(figsize=(20, 8))
+        fig = plt.figure(figsize=(20, 8))
         pos = nx.spring_layout(self.graph)  # Use spring layout instead of graphviz
 
         # Node labels: Node name, Objective value and solution
@@ -150,7 +150,8 @@ class BranchAndBoundSolver:
         plt.title("Branch and Bound Tree", fontsize=14)
         plt.axis('off')
         plt.tight_layout()
-        plt.show()
+        return fig  # Return the figure instead of showing it
+
     
     def display_steps_table(self):
         """Display the steps in tabular format"""
